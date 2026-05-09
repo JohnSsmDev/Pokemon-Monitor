@@ -1,7 +1,14 @@
-from telegram.ext import Updater, CommandHandler
+from telegram import Update
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    ContextTypes
+)
+
 from pokemon_api import get_cards
 from analyzer import calculate_score
 from db import save_price, get_average_price
+
 import os
 
 TOKEN = os.getenv("TOKEN")
@@ -12,7 +19,10 @@ print("🚀 BOT INTERATIVO INICIADO")
 # /start
 # =========================
 
-def start(update, context):
+async def start(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
 
     msg = (
         "🔥 Pokemon Market Bot ONLINE\n\n"
@@ -22,13 +32,16 @@ def start(update, context):
         "/card umbreon vmax"
     )
 
-    update.message.reply_text(msg)
+    await update.message.reply_text(msg)
 
 # =========================
 # /card
 # =========================
 
-def card(update, context):
+async def card(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
 
     try:
 
@@ -36,8 +49,10 @@ def card(update, context):
 
         if not query:
 
-            update.message.reply_text(
-                "Digite o nome da carta.\n\nExemplo:\n/card charizard"
+            await update.message.reply_text(
+                "Digite o nome da carta.\n\n"
+                "Exemplo:\n"
+                "/card charizard"
             )
 
             return
@@ -46,7 +61,7 @@ def card(update, context):
 
         if not cards:
 
-            update.message.reply_text(
+            await update.message.reply_text(
                 "Carta não encontrada."
             )
 
@@ -88,7 +103,7 @@ def card(update, context):
 
         if not market_price:
 
-            update.message.reply_text(
+            await update.message.reply_text(
                 "Sem preço disponível."
             )
 
@@ -122,7 +137,7 @@ def card(update, context):
             f"🔥 Score: {score:.2f}"
         )
 
-        update.message.reply_photo(
+        await update.message.reply_photo(
             photo=image,
             caption=msg
         )
@@ -133,32 +148,24 @@ def card(update, context):
 
         print("ERRO:", e)
 
-        update.message.reply_text(
+        await update.message.reply_text(
             "Erro ao consultar carta."
         )
 
 # =========================
-# TELEGRAM
+# APP
 # =========================
 
-updater = Updater(TOKEN)
+app = ApplicationBuilder().token(TOKEN).build()
 
-dp = updater.dispatcher
-
-dp.add_handler(
+app.add_handler(
     CommandHandler("start", start)
 )
 
-dp.add_handler(
+app.add_handler(
     CommandHandler("card", card)
 )
 
-# =========================
-# START BOT
-# =========================
-
 print("✅ BOT ONLINE")
 
-updater.start_polling()
-
-updater.idle()
+app.run_polling()
