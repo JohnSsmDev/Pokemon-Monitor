@@ -1,22 +1,12 @@
-import math
+def calculate_score(price, average):
 
-def analyze(prices, current_price):
+    if average == 0:
+        return 0
 
-    if len(prices) < 5:
-        return None
+    # quanto abaixo da média
+    diff = (average - price) / average
 
-    mean = sum(prices) / len(prices)
+    # score simples
+    score = diff * 10
 
-    std = math.sqrt(
-        sum((x - mean) ** 2 for x in prices) / len(prices)
-    )
-
-    if std == 0:
-        return None
-
-    z_score = (mean - current_price) / std
-
-    return {
-        "mean": mean,
-        "score": z_score
-    }
+    return round(score, 2)
