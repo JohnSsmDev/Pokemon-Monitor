@@ -1,4 +1,5 @@
 import os
+import asyncio
 from telegram import Bot
 
 TOKEN = os.getenv("TOKEN")
@@ -6,13 +7,13 @@ CHAT_ID = os.getenv("CHAT_ID")
 
 bot = Bot(token=TOKEN)
 
-def send_alert(msg, image=None):
+async def send_async(msg, image=None):
 
     try:
 
         if image:
 
-            bot.send_photo(
+            await bot.send_photo(
                 chat_id=CHAT_ID,
                 photo=image,
                 caption=msg
@@ -20,7 +21,7 @@ def send_alert(msg, image=None):
 
         else:
 
-            bot.send_message(
+            await bot.send_message(
                 chat_id=CHAT_ID,
                 text=msg
             )
@@ -30,3 +31,9 @@ def send_alert(msg, image=None):
     except Exception as e:
 
         print("ERRO TELEGRAM:", e)
+
+def send_alert(msg, image=None):
+
+    asyncio.run(
+        send_async(msg, image)
+    )
