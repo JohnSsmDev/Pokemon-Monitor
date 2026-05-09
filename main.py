@@ -1,131 +1,153 @@
-import time
+from telegram.ext import Updater, CommandHandler
 from pokemon_api import get_cards
-from db import save_price, get_average_price
 from analyzer import calculate_score
-from bot import send_alert
+from db import save_price, get_average_price
+import os
 
-print("🚀 MONITOR POKEMON INICIADO")
+TOKEN = os.getenv("TOKEN")
 
-# =========================
-# CONFIG
-# =========================
-
-cards_to_track = [
-    "charizard",
-    "umbreon",
-    "rayquaza",
-    "gengar",
-    "pikachu",
-]
-
-# anti-spam
-last_alerts = {}
-
-# cooldown em segundos
-COOLDOWN = 3600  # 1 hora
+print("🚀 BOT INTERATIVO INICIADO")
 
 # =========================
-# LOOP PRINCIPAL
+# COMANDO /start
 # =========================
 
-while True:
+def start(update, context):
 
-    print("📡 MONITORANDO MERCADO...")
+    msg = (
+        "🔥 Pokemon Market Bot ONLINE\n\n"
+        "Use:\n"
+        "/card nome_da_carta\n\n"
+        "Exemplo:\n"
+        "/card umbreon vmax"
+    )
+
+    update.message.reply_text(msg)
+
+# =========================
+# COMANDO /card
+# =========================
+
+def card(update, context):
 
     try:
 
-        for query in cards_to_track:
+        query = " ".join(context.args)
 
-            cards = get_cards(query)
+        if not query:
 
-            if not cards:
-                continue
+            update.message.reply_text(
+                "Digite o nome da carta.\n\nExemplo:\n/card charizard"
+            )
 
-            for card in cards[:3]:
+            return
 
-                try:
+        cards = get_cards(query)
 
-                    name = card["name"]
+        if not cards:
 
-                    set_name = card["set"]["name"]
+            update.message.reply_text(
+                "Carta não encontrada."
+            )
 
-                    number = card["number"]
+            return
 
-                    image = card["images"]["large"]
+        card = cards[0]
 
-                    prices = card.get("tcgplayer", {}).get("prices", {})
+        name = card["name"]
 
-                    market_price = None
+        set_name = card["set"]["name"]
 
-                    # tenta pegar o melhor preço disponível
-                    for rarity_type in prices.values():
+        number = card["number"]
 
-                        if isinstance(rarity_type, dict):
+        rarity = card.get("rarity", "Desconhecida")
 
-                            market_price = rarity_type.get("market")
+        image = card["images"]["large"]
 
-                            if market_price:
-                                break
+        prices = card.get("tcgplayer", {}).get("prices", {})
 
-                    if not market_price:
-                        continue
+        market_price = None
 
-                    print(f"{name} - ${market_price}")
+        for p in prices.values():
 
-                    # salva histórico
-                    save_price(name, market_price)
+            if isinstance(p, dict):
 
-                    # média histórica
-                    avg = get_average_price(name)
+                market_price = p.get("market")
 
-                    if not avg:
-                        continue
+                if market_price:
+                    break
 
-                    # calcula score
-                    score = calculate_score(
-                        market_price,
-                        avg
-                    )
+        if not market_price:
 
-                    # threshold oportunidade
-                    if score > 0.25:
+            update.message.reply_text(
+                "Sem preço disponível."
+            )
 
-                        now = time.time()
+            return
 
-                        # anti-spam
-                        if name in last_alerts:
+        # salva histórico
+        save_price(name, market_price)
 
-                            elapsed = now - last_alerts[name]
+        avg = get_average_price(name)
 
-                            if elapsed < COOLDOWN:
-                                continue
+        if not avg:
+            avg = market_price
 
-                        last_alerts[name] = now
+        score = calculate_score(
+            market_price,
+            avg
+        )
 
-                        msg = (
-                            f"🔥 OPORTUNIDADE DETECTADA\n\n"
-                            f"🃏 {name}\n"
-                            f"📦 Coleção: {set_name}\n"
-                            f"🔢 Número: {number}\n\n"
-                            f"💰 Preço Atual: ${market_price}\n"
-                            f"📊 Média Histórica: ${avg:.2f}\n"
-                            f"📈 Score: {score:.2f}"
-                        )
+        msg = (
+            f"🃏 {name}\n\n"
+            f"📦 Coleção: {set_name}\n"
+            f"🔢 Número: {number}\n"
+            f"⭐ Raridade: {rarity}\n\n"
+            f"💰 Market Price: ${market_price}\n"
+            f"📊 Média: ${avg:.2f}\n"
+            f"🔥 Score: {score:.2f}"
+        )
 
-                        send_alert(
-                            msg,
-                            image=image
-                        )
+        update.message.reply_photo(
+            photo=image,
+            caption=msg
+        )
 
-                        print("✅ ALERTA ENVIADO")
-
-                except Exception as card_error:
-
-                    print("ERRO CARTA:", card_error)
+        print(f"CONSULTA: {query}")
 
     except Exception as e:
 
-        print("ERRO LOOP:", e)
+        print("ERRO:", e)
 
-    # intervalo
-    time.sleep(300)
+        update.message.reply_text(
+            "Erro ao consultar carta."
+        )
+
+# =========================
+# TELEGRAM
+# =========================
+
+updater = Updater(
+    TOKEN,
+    use_context=True
+)
+
+dp = updater.dispatcher
+
+dp.add_handler(
+    CommandHandler("start", start)
+)
+
+dp.add_handler(
+    CommandHandler("card", card)
+)
+
+# =========================
+# START BOT
+# =========================
+
+updater.start_polling()
+
+print("✅ BOT ONLINE")
+
+updater.idle()
