@@ -16,7 +16,7 @@ TOKEN = os.getenv("TOKEN")
 print("🚀 BOT INTERATIVO INICIADO")
 
 # =========================
-# /start
+# START
 # =========================
 
 async def start(
@@ -26,10 +26,26 @@ async def start(
 
     msg = (
         "🔥 Pokemon Market Bot ONLINE\n\n"
-        "Use:\n"
-        "/card nome_da_carta\n\n"
-        "Exemplo:\n"
-        "/card umbreon vmax"
+
+        "📌 COMANDOS:\n\n"
+
+        "/card nome\n"
+        "/card numero\n\n"
+
+        "🧪 EXEMPLOS:\n\n"
+
+        "✅ /card M Rayquaza EX\n"
+        "✅ /card Umbreon VMAX\n"
+        "✅ /card Charizard GX\n"
+        "✅ /card Pikachu EX\n"
+        "✅ /card Gengar V\n"
+        "✅ /card 215\n\n"
+
+        "⚠ IMPORTANTE:\n"
+        "- Use M no lugar de Mega\n"
+        "- Use EX/V/VMAX/GX corretamente\n"
+        "- Alguns cards possuem múltiplas versões\n"
+        "- O bot mostrará até 5 resultados"
     )
 
     await update.message.reply_text(msg)
@@ -50,9 +66,7 @@ async def card(
         if not query:
 
             await update.message.reply_text(
-                "Digite o nome da carta.\n\n"
-                "Exemplo:\n"
-                "/card charizard"
+                "Digite o nome ou número da carta."
             )
 
             return
@@ -67,80 +81,88 @@ async def card(
 
             return
 
-        card_data = cards[0]
+        # limita quantidade
+        cards = cards[:5]
 
-        name = card_data["name"]
+        for card_data in cards:
 
-        set_name = card_data["set"]["name"]
+            try:
 
-        number = card_data["number"]
+                name = card_data["name"]
 
-        rarity = card_data.get(
-            "rarity",
-            "Desconhecida"
-        )
+                set_name = card_data["set"]["name"]
 
-        image = card_data["images"]["large"]
+                number = card_data["number"]
 
-        prices = card_data.get(
-            "tcgplayer",
-            {}
-        ).get(
-            "prices",
-            {}
-        )
+                rarity = card_data.get(
+                    "rarity",
+                    "Desconhecida"
+                )
 
-        market_price = None
+                image = card_data["images"]["large"]
 
-        for p in prices.values():
+                prices = card_data.get(
+                    "tcgplayer",
+                    {}
+                ).get(
+                    "prices",
+                    {}
+                )
 
-            if isinstance(p, dict):
+                market_price = None
 
-                market_price = p.get("market")
+                for p in prices.values():
 
-                if market_price:
-                    break
+                    if isinstance(p, dict):
 
-        if not market_price:
+                        market_price = p.get("market")
 
-            await update.message.reply_text(
-                "Sem preço disponível."
-            )
+                        if market_price:
+                            break
 
-            return
+                if not market_price:
+                    market_price = "N/A"
 
-        # salva histórico
-        save_price(
-            name,
-            market_price
-        )
+                else:
 
-        # média histórica
-        avg = get_average_price(name)
+                    save_price(
+                        name,
+                        market_price
+                    )
 
-        if not avg:
-            avg = market_price
+                    avg = get_average_price(name)
 
-        # score
-        score = calculate_score(
-            market_price,
-            avg
-        )
+                    if not avg:
+                        avg = market_price
 
-        msg = (
-            f"🃏 {name}\n\n"
-            f"📦 Coleção: {set_name}\n"
-            f"🔢 Número: {number}\n"
-            f"⭐ Raridade: {rarity}\n\n"
-            f"💰 Market Price: ${market_price}\n"
-            f"📊 Média: ${avg:.2f}\n"
-            f"🔥 Score: {score:.2f}"
-        )
+                    score = calculate_score(
+                        market_price,
+                        avg
+                    )
 
-        await update.message.reply_photo(
-            photo=image,
-            caption=msg
-        )
+                msg = (
+                    f"🃏 {name}\n\n"
+                    f"📦 Coleção: {set_name}\n"
+                    f"🔢 Número: {number}\n"
+                    f"⭐ Raridade: {rarity}\n\n"
+                    f"💰 Market Price: ${market_price}\n"
+                )
+
+                if market_price != "N/A":
+
+                    msg += (
+                        f"📊 Média: ${avg:.2f}\n"
+                        f"🔥 Score: {score:.2f}"
+                    )
+
+                await update.message.reply_photo(
+                    photo=image,
+                    caption=msg
+                )
+
+            except Exception as card_error:
+
+                print("ERRO CARTA:", card_error)
 
         print(f"CONSULTA: {query}")
 
