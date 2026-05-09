@@ -9,7 +9,7 @@ TOKEN = os.getenv("TOKEN")
 print("🚀 BOT INTERATIVO INICIADO")
 
 # =========================
-# COMANDO /start
+# /start
 # =========================
 
 def start(update, context):
@@ -25,7 +25,7 @@ def start(update, context):
     update.message.reply_text(msg)
 
 # =========================
-# COMANDO /card
+# /card
 # =========================
 
 def card(update, context):
@@ -52,19 +52,28 @@ def card(update, context):
 
             return
 
-        card = cards[0]
+        card_data = cards[0]
 
-        name = card["name"]
+        name = card_data["name"]
 
-        set_name = card["set"]["name"]
+        set_name = card_data["set"]["name"]
 
-        number = card["number"]
+        number = card_data["number"]
 
-        rarity = card.get("rarity", "Desconhecida")
+        rarity = card_data.get(
+            "rarity",
+            "Desconhecida"
+        )
 
-        image = card["images"]["large"]
+        image = card_data["images"]["large"]
 
-        prices = card.get("tcgplayer", {}).get("prices", {})
+        prices = card_data.get(
+            "tcgplayer",
+            {}
+        ).get(
+            "prices",
+            {}
+        )
 
         market_price = None
 
@@ -86,13 +95,18 @@ def card(update, context):
             return
 
         # salva histórico
-        save_price(name, market_price)
+        save_price(
+            name,
+            market_price
+        )
 
+        # média histórica
         avg = get_average_price(name)
 
         if not avg:
             avg = market_price
 
+        # score
         score = calculate_score(
             market_price,
             avg
@@ -127,10 +141,7 @@ def card(update, context):
 # TELEGRAM
 # =========================
 
-updater = Updater(
-    TOKEN,
-    use_context=True
-)
+updater = Updater(TOKEN)
 
 dp = updater.dispatcher
 
@@ -146,8 +157,8 @@ dp.add_handler(
 # START BOT
 # =========================
 
-updater.start_polling()
-
 print("✅ BOT ONLINE")
+
+updater.start_polling()
 
 updater.idle()
