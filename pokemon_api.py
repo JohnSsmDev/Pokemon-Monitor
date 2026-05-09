@@ -1,9 +1,10 @@
 import requests
+import re
 
 URL = "https://api.pokemontcg.io/v2/cards"
 
 def normalize(text):
-    return text.lower().replace(" ", "")
+    return re.sub(r'[^a-z0-9]', '', text.lower())
 
 def get_cards(query):
 
@@ -20,9 +21,17 @@ def get_cards(query):
 
             name = normalize(card.get("name", ""))
             number = normalize(card.get("number", ""))
+            set_number = normalize(card.get("number", ""))
 
-            # busca flexível
-            if q in name or q == number:
+            card_id = normalize(card.get("id", ""))
+
+            # MATCH INTELIGENTE:
+            if (
+                q in name or
+                q == number or
+                q == set_number or
+                q in card_id
+            ):
                 results.append(card)
 
         return results
