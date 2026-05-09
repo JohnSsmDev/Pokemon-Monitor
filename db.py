@@ -1,32 +1,59 @@
 import sqlite3
 
-conn = sqlite3.connect("market.db")
+# =========================
+# DATABASE
+# =========================
+
+conn = sqlite3.connect(
+    "market.db",
+    check_same_thread=False
+)
+
 cursor = conn.cursor()
+
+# =========================
+# TABLE
+# =========================
 
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS prices (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT,
     price REAL,
-    ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 """)
 
 conn.commit()
 
+# =========================
+# SAVE PRICE
+# =========================
+
 def save_price(name, price):
 
     cursor.execute(
-        "INSERT INTO prices(name, price) VALUES (?, ?)",
+        "INSERT INTO prices (name, price) VALUES (?, ?)",
         (name, price)
     )
 
     conn.commit()
 
-def get_history(name):
+# =========================
+# GET AVERAGE
+# =========================
+
+def get_average_price(name):
 
     cursor.execute(
-        "SELECT price FROM prices WHERE name=?",
+        "SELECT AVG(price) FROM prices WHERE name=?",
         (name,)
     )
 
-    return [x[0] for x in cursor.fetchall()]
+    result = cursor.fetchone()
+
+    if result and result[0]:
+
+        return float(result[0])
+
+    return None
