@@ -1,12 +1,14 @@
 import time
 
-from sources.ligapokemon import search_liga
+from sources.pokemon_api import search_cards
 from access import add_alert
 
 SEARCHES = [
     "charizard",
     "umbreon",
     "pikachu",
+    "rayquaza",
+    "gengar"
 ]
 
 sent = set()
@@ -17,30 +19,50 @@ def calculate_score(card):
     score = 0
 
     name = card["name"].lower()
+
     price = card["price"]
 
+    rarity = str(card.get("rarity", "")).lower()
+
+    # preço
     if price < 100:
-        score += 30
+        score += 20
 
     if price < 50:
         score += 30
 
+    # raridade
+    rare_keywords = [
+        "ultra",
+        "secret",
+        "illustration",
+        "full",
+        "hyper"
+    ]
+
+    for k in rare_keywords:
+        if k in rarity:
+            score += 25
+
+    # pokémons populares
     hot = [
         "charizard",
         "umbreon",
+        "rayquaza",
         "pikachu",
+        "gengar"
     ]
 
     for h in hot:
         if h in name:
-            score += 25
+            score += 20
 
     return score
 
 
 def start():
 
-    print("📡 ENGINE ONLINE")
+    print("📡 ENGINE GLOBAL ONLINE")
 
     while True:
 
@@ -48,37 +70,33 @@ def start():
 
             for q in SEARCHES:
 
-                print(f"\n🔍 BUSCANDO: {q}")
+                print(f"🔍 Buscando {q}")
 
-                cards = search_liga(q)
+                cards = search_cards(q)
 
-                print(f"📦 CARDS ENCONTRADOS: {len(cards)}")
+                print(f"📦 {len(cards)} encontrados")
 
                 for c in cards:
 
-                    print("CARD:", c)
-
                     score = calculate_score(c)
 
-                    print("SCORE:", score)
+                    if score < 40:
+                        continue
 
-                    # DEBUG ↓↓↓
-                    if score >= 10:
+                    key = f"{c['name']}-{c['price']}"
 
-                        key = f"{c['name']}-{c['price']}"
+                    if key in sent:
+                        continue
 
-                        if key in sent:
-                            continue
+                    sent.add(key)
 
-                        sent.add(key)
+                    c["score"] = score
 
-                        c["score"] = score
+                    print(
+                        f"🔥 ALERTA: {c['name']} | ${c['price']}"
+                    )
 
-                        print(
-                            f"🔥 ALERTA GERADO: {c['name']}"
-                        )
-
-                        add_alert(c)
+                    add_alert(c)
 
             time.sleep(60)
 
@@ -86,4 +104,4 @@ def start():
 
             print("❌ ERRO ENGINE:", e)
 
-            time.sleep(10)
+            time.sleep(15)

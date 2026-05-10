@@ -56,10 +56,10 @@ async def alerts(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             msg += (
     f"🃏 {c['name']}\n"
-    f"💰 R${c['price']}\n"
+    f"💰 ${c['price']}\n"
     f"⭐ Score: {c['score']}\n"
-    f"🏪 {c['source']}\n"
-    f"🔗 {c['link']}\n\n"
+    f"🏆 {c.get('rarity')}\n"
+    f"📦 {c.get('set')}\n\n"
 )
 
         await update.message.reply_text(msg)
