@@ -5,8 +5,13 @@ def search_cards(query):
 
     url = "https://api.pokemontcg.io/v2/cards"
 
+    search_query = (
+        f'name:*{query}* OR number:{query}'
+    )
+
     params = {
-        "q": f'name:"{query}"'
+        "q": search_query,
+        "pageSize": 10
     }
 
     r = requests.get(url, params=params)
@@ -20,21 +25,21 @@ def search_cards(query):
         try:
 
             market = c.get("cardmarket", {})
-
             prices = market.get("prices", {})
 
-            price = prices.get("averageSellPrice")
-
-            if not price:
-                continue
+            price = (
+                prices.get("averageSellPrice")
+                or prices.get("trendPrice")
+                or 0
+            )
 
             cards.append({
-                "name": c["name"],
+                "name": c.get("name"),
                 "number": c.get("number"),
                 "rarity": c.get("rarity"),
                 "set": c.get("set", {}).get("name"),
-                "image": c.get("images", {}).get("small"),
-                "price": price,
+                "image": c.get("images", {}).get("large"),
+                "price": round(float(price), 2),
                 "source": "PokemonTCG"
             })
 
