@@ -1,5 +1,4 @@
 import requests
-from bs4 import BeautifulSoup
 
 
 def search_liga(query):
@@ -12,36 +11,7 @@ def search_liga(query):
 
     r = requests.get(url, headers=headers)
 
-    soup = BeautifulSoup(r.text, "html.parser")
+    print("\n===== HTML RECEBIDO =====\n")
+    print(r.text[:5000])
 
-    cards = []
-
-    produtos = soup.select(".card-item")
-
-    for p in produtos:
-
-        try:
-
-            nome = p.select_one(".card-name").text.strip()
-
-            preco = (
-                p.select_one(".price")
-                .text
-                .replace("R$", "")
-                .replace(",", ".")
-                .strip()
-            )
-
-            link = p.select_one("a")["href"]
-
-            cards.append({
-                "name": nome,
-                "price": float(preco),
-                "source": "LigaPokemon",
-                "link": link
-            })
-
-        except:
-            continue
-
-    return cards
+    return []
