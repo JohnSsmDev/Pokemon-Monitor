@@ -18,7 +18,7 @@ def create_pix_payment(user_id):
 
     payload = {
         "value": 19.90,
-        "webhook_url": "https://SEU-APP.up.railway.app/webhook"
+        "webhook_url": "pokemon-monitor-production-4746.up.railway.app"
     }
 
     r = requests.post(
