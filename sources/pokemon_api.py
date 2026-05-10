@@ -8,7 +8,11 @@ def search_cards(query):
     # busca por número
     if "/" in query:
 
-        search_query = f'number:"{query}"'
+        base_number = query.split("/")[0]
+
+        search_query = (
+            f'number:"{query}" OR number:"{base_number}"'
+        )
 
     # busca por nome
     else:
