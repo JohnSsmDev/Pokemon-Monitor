@@ -1,4 +1,7 @@
-vip_users = set()
+vip_users = {
+    "SEU_ID_AQUI"
+}
+
 alerts = []
 
 def activate_vip(user_id):

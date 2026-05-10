@@ -19,6 +19,9 @@ TOKEN = os.getenv("BOT_TOKEN")
 # START
 # =========================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    print("ID USER:", update.effective_user.id)
+
     await update.message.reply_text(
         "🔥 Radar Pokémon ativo"
     )
