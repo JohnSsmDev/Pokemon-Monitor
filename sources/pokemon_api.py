@@ -5,9 +5,15 @@ def search_cards(query):
 
     url = "https://api.pokemontcg.io/v2/cards"
 
-    search_query = (
-        f'name:*{query}* OR number:{query}'
-    )
+    # busca por número
+    if "/" in query:
+
+        search_query = f'number:"{query}"'
+
+    # busca por nome
+    else:
+
+        search_query = f'name:*{query}*'
 
     params = {
         "q": search_query,
