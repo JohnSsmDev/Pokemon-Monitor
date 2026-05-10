@@ -1,22 +1,18 @@
-import os
-import mercadopago
+from flask import Flask, request
+from access import activate_vip
 
-sdk = mercadopago.SDK(os.getenv("MP_ACCESS_TOKEN"))
+app = Flask(__name__)
 
-def create_payment(user_id):
+def start():
+    print("💰 PAYMENTS ON")
+    app.run(host="0.0.0.0", port=5000)
 
-    preference_data = {
-        "items": [
-            {
-                "title": "VIP Pokemon Bot",
-                "quantity": 1,
-                "currency_id": "BRL",
-                "unit_price": 9.90
-            }
-        ],
-        "external_reference": str(user_id)
-    }
+@app.route("/webhook", methods=["POST"])
+def webhook():
+    data = request.json
 
-    preference = sdk.preference().create(preference_data)
+    if data.get("status") == "approved":
+        user_id = data.get("external_reference")
+        activate_vip(user_id)
 
-    return preference["response"]
+    return "ok"

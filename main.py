@@ -1,11 +1,11 @@
 import threading
-import bot
 import engine
+import bot
+import payments
 
-print("🚀 SISTEMA MONITOR POKÉMON INICIANDO")
+print("🚀 SAAS POKÉMON INICIANDO")
 
-# engine em background
 threading.Thread(target=engine.start, daemon=True).start()
+threading.Thread(target=payments.start, daemon=True).start()
 
-# bot roda no main thread
 bot.run_bot()
