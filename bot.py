@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from payments import create_pix_payment
 from sources.pokemon_api import search_cards
-from watchlist import add_watch, get_watchs
+from watchlist import add_card, get_cards
 from telegram import Update
 from telegram.ext import (
     ApplicationBuilder,
@@ -166,7 +166,7 @@ async def watchlist(update, context):
 
     user = str(update.effective_user.id)
 
-    items = get_watchs(user)
+    items = get_cards(user)
 
     if not items:
 
@@ -196,7 +196,7 @@ async def watch(update, context):
 
     user = str(update.effective_user.id)
 
-    add_watch(user, query)
+    add_card(user, query)
 
     await update.message.reply_text(
         f"✅ Agora monitorando: {query}"
