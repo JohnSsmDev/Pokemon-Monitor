@@ -1,107 +1,93 @@
 import time
+import asyncio
 
 from sources.pokemon_api import search_cards
-from access import add_alert
-
-SEARCHES = [
-    "charizard",
-    "umbreon",
-    "pikachu",
-    "rayquaza",
-    "gengar"
-]
-
-sent = set()
+from watchlist import load
+from notifier import send_alert
 
 
 def calculate_score(card):
 
     score = 0
 
-    name = card["name"].lower()
-
-    price = card["price"]
-
     rarity = str(card.get("rarity", "")).lower()
 
-    # preço
-    if price < 100:
-        score += 20
-
-    if price < 50:
-        score += 30
-
-    # raridade
-    rare_keywords = [
-        "ultra",
+    rare_words = [
         "secret",
+        "ultra",
         "illustration",
-        "full",
-        "hyper"
+        "hyper",
+        "full"
     ]
 
-    for k in rare_keywords:
-        if k in rarity:
-            score += 25
+    for w in rare_words:
 
-    # pokémons populares
-    hot = [
-        "charizard",
-        "umbreon",
-        "rayquaza",
-        "pikachu",
-        "gengar"
-    ]
+        if w in rarity:
+            score += 30
 
-    for h in hot:
-        if h in name:
-            score += 20
+    if card.get("price", 9999) < 50:
+        score += 20
 
     return score
 
 
-def start():
+def run_engine():
 
-    print("📡 ENGINE GLOBAL ONLINE")
+    print("📡 ENGINE INICIADO")
+
+    already_sent = set()
 
     while True:
 
         try:
 
-            for q in SEARCHES:
+            data = load()
 
-                print(f"🔍 Buscando {q}")
+            for user_id, queries in data.items():
 
-                cards = search_cards(q)
+                for q in queries:
 
-                print(f"📦 {len(cards)} encontrados")
+                    cards = search_cards(q)
 
-                for c in cards:
+                    for c in cards[:3]:
 
-                    score = calculate_score(c)
+                        score = calculate_score(c)
 
-                    if score < 40:
-                        continue
+                        if score < 30:
+                            continue
 
-                    key = f"{c['name']}-{c['price']}"
+                        unique_id = (
+                            f"{user_id}-{c['name']}-{c['price']}"
+                        )
 
-                    if key in sent:
-                        continue
+                        if unique_id in already_sent:
+                            continue
 
-                    sent.add(key)
+                        already_sent.add(unique_id)
 
-                    c["score"] = score
+                        msg = (
+                            f"🔥 OPORTUNIDADE DETECTADA\n\n"
+                            f"🃏 {c['name']}\n"
+                            f"🏆 {c['rarity']}\n"
+                            f"📦 {c['set']}\n"
+                            f"💰 ${c['price']}\n"
+                            f"⭐ Score: {score}"
+                        )
 
-                    print(
-                        f"🔥 ALERTA: {c['name']} | ${c['price']}"
-                    )
+                        asyncio.run(
+                            send_alert(
+                                user_id,
+                                msg,
+                                c["image"]
+                            )
+                        )
 
-                    add_alert(c)
+                        print("ALERTA ENVIADO")
 
-            time.sleep(60)
+            time.sleep(300)
 
         except Exception as e:
 
-            print("❌ ERRO ENGINE:", e)
+            print("ERRO ENGINE:", e)
 
-            time.sleep(15)
+            time.sleep(60)
