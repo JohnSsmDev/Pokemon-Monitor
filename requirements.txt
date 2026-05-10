@@ -1,7 +1,7 @@
-flask
-requests
 python-telegram-bot==20.7
+python-dotenv
+requests
+beautifulsoup4
+flask
 pandas
 mercadopago
-python-dotenv
-beautifulsoup4

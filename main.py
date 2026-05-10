@@ -2,17 +2,10 @@ import threading
 import bot
 import engine
 
-# =========================
-# BOT THREAD
-# =========================
-def run_bot():
-    try:
-        bot.run_bot()
-    except Exception as e:
-        print("❌ ERRO BOT:", e)
+print("🚀 SISTEMA MONITOR POKÉMON INICIANDO")
 
 # =========================
-# ENGINE THREAD
+# ENGINE (BACKGROUND)
 # =========================
 def run_engine():
     try:
@@ -21,14 +14,14 @@ def run_engine():
         print("❌ ERRO ENGINE:", e)
 
 # =========================
-# START SYSTEM
+# BOT (MAIN THREAD)
 # =========================
+def run_bot():
+    try:
+        bot.run_bot()
+    except Exception as e:
+        print("❌ ERRO BOT:", e)
+
 if __name__ == "__main__":
-    print("🚀 SISTEMA MONITOR POKÉMON INICIANDO")
-
-    # Engine roda em background
-    t1 = threading.Thread(target=run_engine, daemon=True)
-    t1.start()
-
-    # Bot roda no thread principal (polling precisa disso)
+    threading.Thread(target=run_engine, daemon=True).start()
     run_bot()
