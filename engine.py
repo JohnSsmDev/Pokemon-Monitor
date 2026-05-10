@@ -7,8 +7,6 @@ SEARCHES = [
     "charizard",
     "umbreon",
     "pikachu",
-    "rayquaza",
-    "gengar",
 ]
 
 sent = set()
@@ -21,48 +19,28 @@ def calculate_score(card):
     name = card["name"].lower()
     price = card["price"]
 
-    # preço baixo
     if price < 100:
         score += 30
 
-    # muito barato
     if price < 50:
         score += 30
 
-    # pokémons populares
     hot = [
         "charizard",
         "umbreon",
         "pikachu",
-        "rayquaza",
-        "gengar",
     ]
 
     for h in hot:
         if h in name:
             score += 25
 
-    # full art / raras
-    keywords = [
-        "vmax",
-        "vstar",
-        "gx",
-        "ex",
-        "full art",
-        "illustration",
-        "secret"
-    ]
-
-    for k in keywords:
-        if k in name:
-            score += 20
-
     return score
 
 
 def start():
 
-    print("📡 ENGINE LIGA POKÉMON ONLINE")
+    print("📡 ENGINE ONLINE")
 
     while True:
 
@@ -70,34 +48,42 @@ def start():
 
             for q in SEARCHES:
 
+                print(f"\n🔍 BUSCANDO: {q}")
+
                 cards = search_liga(q)
+
+                print(f"📦 CARDS ENCONTRADOS: {len(cards)}")
 
                 for c in cards:
 
+                    print("CARD:", c)
+
                     score = calculate_score(c)
 
-                    if score < 50:
-                        continue
+                    print("SCORE:", score)
 
-                    key = f"{c['name']}-{c['price']}"
+                    # DEBUG ↓↓↓
+                    if score >= 10:
 
-                    if key in sent:
-                        continue
+                        key = f"{c['name']}-{c['price']}"
 
-                    sent.add(key)
+                        if key in sent:
+                            continue
 
-                    c["score"] = score
+                        sent.add(key)
 
-                    print(
-                        f"🔥 OPORTUNIDADE: {c['name']} | R${c['price']}"
-                    )
+                        c["score"] = score
 
-                    add_alert(c)
+                        print(
+                            f"🔥 ALERTA GERADO: {c['name']}"
+                        )
+
+                        add_alert(c)
 
             time.sleep(60)
 
         except Exception as e:
 
-            print("ERRO ENGINE:", e)
+            print("❌ ERRO ENGINE:", e)
 
-            time.sleep(15)
+            time.sleep(10)
