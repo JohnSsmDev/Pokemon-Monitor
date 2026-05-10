@@ -55,10 +55,12 @@ async def alerts(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for c in data[-10:]:
 
             msg += (
-                f"🃏 {c['name']}\n"
-                f"💰 R${c['price']}\n"
-                f"⭐ Score: {c['score']}\n\n"
-            )
+    f"🃏 {c['name']}\n"
+    f"💰 R${c['price']}\n"
+    f"⭐ Score: {c['score']}\n"
+    f"🏪 {c['source']}\n"
+    f"🔗 {c['link']}\n\n"
+)
 
         await update.message.reply_text(msg)
 
