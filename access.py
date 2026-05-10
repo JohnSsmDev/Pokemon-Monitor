@@ -1,17 +1,36 @@
-vip_users = {
-    "6339790119"
-}
+import json
+import os
 
-alerts = []
+FILE = "vip_users.json"
 
-def activate_vip(user_id):
-    vip_users.add(user_id)
 
-def is_vip(user_id):
-    return user_id in vip_users
+def load():
 
-def add_alert(alert):
-    alerts.append(alert)
+    if not os.path.exists(FILE):
+        return []
 
-def get_alerts():
-    return alerts
+    with open(FILE, "r") as f:
+        return json.load(f)
+
+
+def save(data):
+
+    with open(FILE, "w") as f:
+        json.dump(data, f, indent=4)
+
+
+def is_vip(user):
+
+    data = load()
+
+    return user in data
+
+
+def add_vip(user):
+
+    data = load()
+
+    if user not in data:
+        data.append(user)
+
+    save(data)

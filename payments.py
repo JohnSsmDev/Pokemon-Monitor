@@ -1,18 +1,35 @@
-from flask import Flask, request
-from access import activate_vip
+import os
+import requests
+from dotenv import load_dotenv
 
-app = Flask(__name__)
+load_dotenv()
 
-def start():
-    print("💰 PAYMENTS ON")
-    app.run(host="0.0.0.0", port=5000)
+TOKEN = os.getenv("PUSHINPAY_TOKEN")
 
-@app.route("/webhook", methods=["POST"])
-def webhook():
-    data = request.json
 
-    if data.get("status") == "approved":
-        user_id = data.get("external_reference")
-        activate_vip(user_id)
+def create_pix_payment(user_id):
 
-    return "ok"
+    url = "https://api.pushinpay.com.br/api/pix/cashIn"
+
+    headers = {
+        "Authorization": f"Bearer {TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "value": 19.90,
+        "webhook_url": "https://SEU-APP.up.railway.app/webhook"
+    }
+
+    r = requests.post(
+        url,
+        json=payload,
+        headers=headers
+    )
+
+    data = r.json()
+
+    return {
+        "pix_code": data.get("qr_code"),
+        "payment_id": data.get("id")
+    }

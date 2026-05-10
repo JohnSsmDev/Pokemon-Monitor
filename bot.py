@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from payments import create_pix_payment
 from sources.pokemon_api import search_cards
 from watchlist import add_watch, get_watchs
 from telegram import Update
@@ -71,6 +72,23 @@ async def alerts(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "❌ Erro interno no /alerts"
         )
+
+async def vip(update, context):
+
+    user = str(update.effective_user.id)
+
+    payment = create_pix_payment(user)
+
+    msg = (
+        "🔥 VIP RADAR POKÉMON\n\n"
+        "💰 Plano Mensal: R$19,90\n\n"
+        "📲 PIX COPIA E COLA:\n\n"
+        f"{payment['pix_code']}"
+    )
+
+    await update.message.reply_text(msg)
+
+    await update.message.reply_text(msg)
 
 async def find(update, context):
 
@@ -175,6 +193,7 @@ def run_bot():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("alerts", alerts))
     app.add_handler(CommandHandler("find", find))
+    app.add_handler(CommandHandler("vip", vip))
     app.add_handler(CommandHandler("watch", watch))
     app.add_handler(CommandHandler("watchlist", watchlist))
 
