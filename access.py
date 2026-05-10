@@ -1,5 +1,5 @@
 vip_users = {
-    "SEU_ID_AQUI"
+    6339790119
 }
 
 alerts = []
