@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from sources.pokemon_api import search_cards
+from watchlist import add_watch, get_watchs
 from telegram import Update
 from telegram.ext import (
     ApplicationBuilder,
@@ -85,6 +86,46 @@ async def find(update, context):
         f"🔍 Procurando: {query}"
     )
 
+async def watchlist(update, context):
+
+    user = str(update.effective_user.id)
+
+    items = get_watchs(user)
+
+    if not items:
+
+        await update.message.reply_text(
+            "❌ Sua watchlist está vazia."
+        )
+        return
+
+    msg = "👀 SUA WATCHLIST:\n\n"
+
+    for i in items:
+
+        msg += f"• {i}\n"
+
+    await update.message.reply_text(msg)
+
+async def watch(update, context):
+
+    if not context.args:
+
+        await update.message.reply_text(
+            "Use: /watch nome_da_carta"
+        )
+        return
+
+    query = " ".join(context.args)
+
+    user = str(update.effective_user.id)
+
+    add_watch(user, query)
+
+    await update.message.reply_text(
+        f"✅ Agora monitorando: {query}"
+    )
+
     cards = search_cards(query)
 
     if not cards:
@@ -134,7 +175,9 @@ def run_bot():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("alerts", alerts))
     app.add_handler(CommandHandler("find", find))
-    
+    app.add_handler(CommandHandler("watch", watch))
+    app.add_handler(CommandHandler("watchlist", watchlist))
+
     print("🤖 BOT ONLINE")
 
     app.run_polling()
