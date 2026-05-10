@@ -19,20 +19,19 @@ def save(data):
         json.dump(data, f, indent=4)
 
 
-def add_watch(user, query):
+def add_card(user, card):
 
     data = load()
 
     if user not in data:
         data[user] = []
 
-    if query not in data[user]:
-        data[user].append(query)
+    data[user].append(card)
 
     save(data)
 
 
-def get_watchs(user):
+def get_cards(user):
 
     data = load()
 

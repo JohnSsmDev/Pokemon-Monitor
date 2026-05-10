@@ -20,13 +20,27 @@ TOKEN = os.getenv("BOT_TOKEN")
 # =========================
 # START
 # =========================
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def start(update, context):
 
-    print("ID USER:", update.effective_user.id)
+    text = (
+        "🔥 RADAR POKÉMON TCG\n\n"
+        "Encontre oportunidades de compra "
+        "antes do mercado.\n\n"
 
-    await update.message.reply_text(
-        "🔥 Radar Pokémon ativo"
+        "⚡ Recursos:\n"
+        "• Alertas automáticos\n"
+        "• Busca inteligente\n"
+        "• Cartas raras\n"
+        "• Oportunidades VIP\n\n"
+
+        "🔎 Comandos:\n"
+        "/find charizard\n"
+        "/alerts\n"
+        "/vip\n"
+        "/plans"
     )
+
+    await update.message.reply_text(text)
 
 
 # =========================
@@ -57,11 +71,11 @@ async def alerts(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for c in data[-10:]:
 
             msg += (
-    f"🃏 {c['name']}\n"
+    f"🔥 {c['name']}\n"
     f"💰 ${c['price']}\n"
-    f"⭐ Score: {c['score']}\n"
     f"🏆 {c.get('rarity')}\n"
-    f"📦 {c.get('set')}\n\n"
+    f"📦 {c.get('set')}\n"
+    f"⭐ Opportunity Score: {c['score']}/100\n\n"
 )
 
         await update.message.reply_text(msg)
@@ -72,6 +86,50 @@ async def alerts(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "❌ Erro interno no /alerts"
         )
+
+async def plans(update, context):
+
+    text = (
+        "💎 PLANOS RADAR VIP\n\n"
+
+        "🥉 FREE\n"
+        "• Busca básica\n"
+        "• 5 resultados\n\n"
+
+        "🥇 VIP — R$19,90/mês\n"
+        "• Alertas automáticos\n"
+        "• Oportunidades raras\n"
+        "• Watchlist\n"
+        "• Prioridade\n\n"
+
+        "🚀 Assine:\n"
+        "/vip"
+    )
+
+async def help_cmd(update, context):
+
+    text = (
+        "📚 AJUDA\n\n"
+
+        "/find nome\n"
+        "Busca cartas\n\n"
+
+        "/find 125/094\n"
+        "Busca por número\n\n"
+
+        "/alerts\n"
+        "Radar VIP\n\n"
+
+        "/watchlist\n"
+        "Lista pessoal\n\n"
+
+        "/vip\n"
+        "Assinar VIP"
+    )
+
+    await update.message.reply_text(text)
+
+    await update.message.reply_text(text)
 
 async def vip(update, context):
 
@@ -171,13 +229,13 @@ async def watch(update, context):
                 score += 30
 
         caption = (
-            f"🃏 {c['name']}\n"
-            f"🔢 {c['number']}\n"
-            f"🏆 {c['rarity']}\n"
-            f"📦 {c['set']}\n"
-            f"💰 ${c['price']}\n"
-            f"⭐ Score: {score}"
-        )
+    f"🃏 {c['name']}\n\n"
+    f"🔢 {c['number']}\n"
+    f"🏆 {c['rarity']}\n"
+    f"📦 {c['set']}\n"
+    f"💰 ${c['price']}\n\n"
+    f"⭐ Opportunity Score: {score}/100"
+)
 
         await update.message.reply_photo(
             photo=c["image"],
@@ -194,6 +252,8 @@ def run_bot():
     app.add_handler(CommandHandler("alerts", alerts))
     app.add_handler(CommandHandler("find", find))
     app.add_handler(CommandHandler("vip", vip))
+    app.add_handler(CommandHandler("plans", plans))
+    app.add_handler(CommandHandler("help", help_cmd))
     app.add_handler(CommandHandler("watch", watch))
     app.add_handler(CommandHandler("watchlist", watchlist))
 
