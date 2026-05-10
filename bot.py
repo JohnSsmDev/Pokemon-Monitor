@@ -10,7 +10,7 @@ from telegram.ext import (
     ContextTypes,
 )
 
-from access import is_vip, get_alerts
+from access import is_vip
 
 load_dotenv()
 
@@ -58,7 +58,7 @@ async def alerts(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-        data = get_alerts()
+        data = []
 
         if not data:
             await update.message.reply_text(
